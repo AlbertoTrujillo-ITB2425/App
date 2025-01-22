@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Management</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='styles.css') }}" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center">Employee Management</h1>
+        
+        <table class="table table-striped mt-4">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Position</th>
+                    <th>Salary</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for employee in employees %}
+                <tr>
+                    <td>{{ employee[0] }}</td>
+                    <td>{{ employee[1] }}</td>
+                    <td>{{ employee[2] }}</td>
+                    <td>{{ employee[3] }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+
+        <h2 class="mt-5">Add Employee</h2>
+        <form action="/add" method="post" class="mt-4">
+            <div class="form-group">
+                <label for="name">Name</label>
+                <input type="text" class="form-control" id="name" name="name" required>
+            </div>
+            <div class="form-group">
+                <label for="position">Position</label>
+                <input type="text" class="form-control" id="position" name="position" required>
+            </div>
+            <div class="form-group">
+                <label for="salary">Salary</label>
+                <input type="number" class="form-control" id="salary" name="salary" required step="0.01">
+            </div>
+            <button type="submit" class="btn btn-primary">Add Employee</button>
+        </form>
+
+        <a href="/export" class="btn btn-success mt-3">Export to Excel</a>
+    </div>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, message in messages %}
+    <div class="alert alert-{{ category }}">
+        {{ message }}
+    </div>
+    {% endfor %}
+    {% endwith %}
+
+    <!-- Export to Excel functionality -->
+     <script src="{{ url_for('static', filename='export_to_excel.js') }}"></script>
+     <script>
+        const exportToExcelBtn = document.getElementById('export-to-excel');
+        exportToExcelBtn.addEventListener('click', () => {
+            exportTableToExcel(document.querySelector('table'), 'employees.xlsx');
+        });
+        function exportTableToExcel(table, filename = 'data.xlsx') {
+            const uri = 'data:text/csv;charset=utf-8,' + encodeURIComponent(convertTableToCSV(table));
+            const link = document.createElement('a');
+            link.href = uri;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+        function convertTableToCSV(table) {
+            let data = [];
+            const headers = Array.from(table.rows[0].cells).map(th => th.innerText);
+            data.push(headers.join(','));
+            Array.from(table.rows).slice(1).forEach(row => {
+                const rowData = Array.from(row.cells).map(td => td.innerText);
+                data.push(rowData.join(','));
+            });
+            return data.join('\n');}
+     </script>
+
+    <!-- Bootstrap JS and dependencies (optional) -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
